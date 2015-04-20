@@ -24,6 +24,12 @@ remote_file node['packetbeat']['elasticsearch']['path'] do
   source node['packetbeat']['elasticsearch']['url']
 end
 
+bash 'install_elasticsearch' do
+  cwd ::File.dirname(node['packetbeat']['elasticsearch']['path'])
+  code <<-EOH
+  sudo dpkg -i elasticsearch-1.4.0.deb
+  EOH
+end
 
 execute 'install_elasticsearch' do
   cwd ::File.dirname(node['packetbeat']['elasticsearch']['path'])
@@ -34,7 +40,7 @@ bash 'change_elasticsearch_yml' do
   cwd '/etc/elasticsearch'
   code <<-EOH
     echo " http.cors.enabled: true
-          http.cors.allow-origin: \"http://localhost:8000\" " > elasticsearch.yml
+http.cors.allow-origin: \"http://localhost:8000\" " > elasticsearch.yml
     EOH
 end
 
@@ -53,6 +59,7 @@ directory "/tmp/packetbeat/packetbeat" do
   mode '0755'
   action :create
 end
+
 
 remote_file node['packetbeat']['packetbeat']['path'] do
   source node['packetbeat']['packetbeat']['url']
@@ -81,29 +88,11 @@ execute 'test' do
 end
 
 service "packetbeat" do
-  action [:enable,:start]
+  action :restart
 end
 
-directory "/tmp/packetbeat/kibana" do
-  owner 'root'
-  group 'root'
-  mode '0755'
-  action :create
-end
-
-remote_file node['packetbeat']['kibana']['path'] do
-  source node['packetbeat']['kibana']['url']
-end
-
-bash "install_kibana" do
-  cwd ::File.dirname(node['packetbeat']['kibana']['path'])
-  code <<-EOH
-    sudo tar -xzvf kibana-3.1.2-packetbeat.tar.gz
-    cd kibana-3.1.2-packetbeat
-    python -m SimpleHTTPServer
-    EOH
-end
-
+#for making sure it run, put the order like this,before run kibana
+##################################################
 directory "/tmp/packetbeat/dashboard" do
   owner 'root'
   group 'root'
@@ -118,9 +107,50 @@ end
 bash "install_dashboard" do
   cwd ::File.dirname(node['packetbeat']['dashboard']['path'])
   code <<-EOH
-    sudo tar xzvf v0.4.1.tar.gz
+    sudo tar xzvf dashboards-0.4.1.tar.gz
     cd dashboards-0.4.1
     ./load.sh
     EOH
 end
+##################################################
+
+directory "/tmp/packetbeat/kibana" do
+  owner 'root'
+  group 'root'
+  mode '0755'
+  action :create
+end
+
+remote_file node['packetbeat']['kibana']['path'] do
+  source node['packetbeat']['kibana']['url']
+end
+
+execute "unpress_kibana" do
+  cwd ::File.dirname(node['packetbeat']['kibana']['path'])
+  command 'sudo tar -xzvf kibana-3.1.2-packetbeat.tar.gz'
+end
+
+
+#can not always run by using this resource as follow
+=begin
+python "run_kibana" do
+  cwd "/tmp/packetbeat/kibana/kibana-3.1.2-packetbeat"
+  command 'python -m SimpleHTTPServer'
+end
+=end
+
+execute "run_kibana" do 
+  cwd "/tmp/packetbeat/kibana/kibana-3.1.2-packetbeat" 
+  command 'python -m SimpleHTTPServer'
+end
+
+
+#when the above run,can not run this
+=begin
+service "elasticsearch" do
+  action :restart
+end
+=end
+
+
 

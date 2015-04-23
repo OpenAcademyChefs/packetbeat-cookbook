@@ -24,12 +24,6 @@ remote_file node['packetbeat']['elasticsearch']['path'] do
   source node['packetbeat']['elasticsearch']['url']
 end
 
-bash 'install_elasticsearch' do
-  cwd ::File.dirname(node['packetbeat']['elasticsearch']['path'])
-  code <<-EOH
-  sudo dpkg -i elasticsearch-1.4.0.deb
-  EOH
-end
 
 execute 'install_elasticsearch' do
   cwd ::File.dirname(node['packetbeat']['elasticsearch']['path'])

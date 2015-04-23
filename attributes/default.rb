@@ -7,5 +7,5 @@ default['packetbeat']['packetbeat']['url'] = "https://github.com/packetbeat/pack
 default['packetbeat']['kibana']['path'] = "/tmp/packetbeat/kibana/kibana-3.1.2-packetbeat.tar.gz"
 default['packetbeat']['kibana']['url'] = "https://github.com/packetbeat/kibana/releases/download/v3.1.2-pb/kibana-3.1.2-packetbeat.tar.gz"
 
-default['packetbeat']['dashboard']['path'] = "/tmp/packetbeat/dashboards/v0.4.1.tar.gz"
+default['packetbeat']['dashboard']['path'] = "/tmp/packetbeat/dashboard/dashboards-0.4.1.tar.gz"
 default['packetbeat']['dashboard']['url'] = "https://github.com/packetbeat/dashboards/archive/v0.4.1.tar.gz"
